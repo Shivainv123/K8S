@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1    # this is also the difference we can see in replicaset and replication controller 
+kind: ReplicaSet
+metadata:
+  name: javawebapprc
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:    # this is the only difference we can see in replicaset and replica controller 
+      app: javawebapp
+  template:
+    metadata:
+      name: javawebapppod
+      labels: 
+        app: javawebapp      # selector app name and label app name should be same   
+    spec:          
+     containers: 
+     - name: javawebappcontainer
+       image: ashokit/javawebapp  # this is our docker image in docker repository
+       ports:
+       - containerPort: 8080 
+
+---
+# node-port service manifest yaml file
+apiVersion: v1
+kind: Service
+metadata:
+  name: javawebappsvc
+spec:
+  type: NodePort
+  selector: 
+    app: javawebapp    # this should be as label name 
+  ports: 
+    - port: 80
+      targetPort: 8080 

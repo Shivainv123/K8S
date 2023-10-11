@@ -1,0 +1,139 @@
+K8S URL: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+Create an EC2 Linux server with 2 CPUs and 4GB ram.
+enable all tcp ports numbers for this server.
+K8S-Master
+===========
+
+sudo su
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+# Set SELinux in permissive mode (effectively disabling it)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
+
+
+Install CRI-O
+==============
+
+export VERSION=1.21
+
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/CentOS_8/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
+
+sudo yum install cri-o -y
+
+Enable and start cri-o service
+------------------------------
+
+sudo systemctl enable --now cri-o
+sudo systemctl start cri-o
+
+Installing Docker EC2 Linux
+============================
+
+sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+yum repolist
+
+sudo dnf install docker-ce --nobest -y
+
+docker --version
+
+systemctl start docker
+
+systemctl enable docker
+
+rm -rf /var/run/containerd/containerd.sock
+
+kubeadm init  (only on master)
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl get nodes 
+
+
+kubeadm token create --print-join-command     ( to list token on master)
+
+
+
+Worker Node-1 .... n
+=====================
+
+
+Create an EC2 Linux server with 1 CPUs and 1GB ram.
+enable all TCP port numbers for this server.
+
+sudo su
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+# Set SELinux in permissive mode (effectively disabling it)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
+
+
+Install CRI-O
+==============
+
+export VERSION=1.21
+
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/CentOS_8/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
+
+sudo yum install cri-o -y
+
+#Enable and start cri-o service
+
+sudo systemctl enable --now cri-o
+sudo systemctl start cri-o
+
+Installing Docker EC2 Linux
+============================
+sudo su
+
+sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+yum repolist
+
+sudo dnf install docker-ce --nobest -y
+
+docker --version
+
+systemctl start docker
+
+systemctl enable docker
+
+rm -rf /var/run/containerd/containerd.sock
+
+
