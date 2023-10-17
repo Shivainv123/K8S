@@ -1,0 +1,88 @@
+############################
+Steps to create EKS Cluster
+############################
+
+
+Step1: 
+
+Create VPC using cloud formation (with below s3 URL)
+URL: https://s3.us-west-2.amazonaws.com/amazon-eks/cloudformation/2020-10-29/amazon-eks-vpc-private-subnets.yaml
+Stack name: EKSVPCCloudFormation
+
+
+step2: 
+
+Create a IAM Role in AWS
+       --> Entry type : AWS Service 
+       --> Select usercase as "EKS" ==> EKS Cluster 
+       --> Role name : EKSClusterRole (you can give any name) 
+
+Step3: 
+
+Create EKS Clouster using created VPC and IAM Role
+        ---> Cluster endpoint access: public & private 
+
+Step4:
+
+Create RedHat ec2 instance (K8S_Client_Machine)
+        --->  connect to K8S_Client_Machine using Mobaxterm
+
+######## Install Kubectl with below commands########
+$ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+$ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+$ kubectl version --client 
+
+
+########## Configure AWS Cli with Credentials #############
+Access key ID: 
+Secret Access Key: 
+
+###################################################
+$ aws configure 
+
+Note: we can use root user access key and secret key 
+
+$ aws eks list-clusters
+
+$ ls ~/.
+
+####### update kubeconfig file in remote machine from cluster using below command#####
+$ aws eks update-kubeconfig --name <cluster-name> --region ap-south-1
+
+Step5:
+
+Create IAM role for EKS worker nodes (usecase as EC2) with below policies 
+        a) AmazonEKSWorkerNodePolicy
+        b) AmazonEKS-CNI_Policy
+        c) AmazonEC2ContainerRegistryReadOnly
+
+Step6:
+
+Create Worker Node Group
+    ---> Goto cluster ---> Compute --> Node Group 
+   ----> Select the Role we have created for WorkerNodes
+    ---> Use t2.large 
+   ----> Min 2 and Max 5
+
+Step7:
+
+Once Node Group added then check nodes in K8s_Client_machine
+
+$ kubectl get nodes 
+$ kubectl get pods --all-namespaces
+
+
+Step8:
+
+Create POD and Expose the POD using NodePort service 
+
+NOTE: Enable NODE PORT in security group to access that in our browser 
+
+
+
+
+        
+
+
+
+
