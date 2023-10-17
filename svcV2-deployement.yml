@@ -1,0 +1,15 @@
+apiVersion: v2
+kind: Service
+metadata:
+  name: k8s-boot-demo-service-preprod
+spec:
+  type: NodePort
+  selector:
+    app: k8s-boot-demo
+    version: v2
+  ports:
+    - name: app-port-mappping
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30092
